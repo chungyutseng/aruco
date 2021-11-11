@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 import cv2.aruco as aruco
 import math
+from std_msgs.msg import Float32
 
 # for taking pictures
 # imag_counter = 0
@@ -19,6 +20,13 @@ R_flip[0, 0] = 1
 R_flip[1, 1] = -1
 R_flip[2, 2] = -1
 font = cv2.FONT_HERSHEY_PLAIN
+
+pub_x = rospy.Publisher("/x", Float32, queue_size=10)
+pub_y = rospy.Publisher("/y", Float32, queue_size=10)
+pub_z = rospy.Publisher("/z", Float32, queue_size=10)
+pub_roll = rospy.Publisher("/roll", Float32, queue_size=10)
+pub_pitch = rospy.Publisher("/pitch", Float32, queue_size=10)
+pub_yaw = rospy.Publisher("/yaw", Float32, queue_size=10)
 
 def isRotationMatrix(R):
     Rt = np.transpose(R)
@@ -47,6 +55,7 @@ def rotationMatrixToEulerAngles(R):
 
 def convert_color_image(ros_image):
     # global imag_counter
+    global pub_x, pub_y, pub_z, pub_roll, pub_pitch, pub_yaw
     bridge = CvBridge()
     try:
         color_image = bridge.imgmsg_to_cv2(ros_image, "bgr8")
@@ -63,19 +72,22 @@ def convert_color_image(ros_image):
             ret = aruco.estimatePoseSingleMarkers(corners, marker_size, camera_matrix, camera_distortion)
             rvec, tvec = ret[0][0, 0, :], ret[1][0, 0, :]
 
-            aruco.drawAxis(color_image, camera_matrix, camera_distortion, rvec, tvec, 10)
-            corners = np.array(corners)
-            corners = corners.reshape((4, 2))
-            (topLeft, topRight, bottomRight, bottomLeft) = corners
-            topRight = (int(topRight[0]), int(topRight[1]))
-            bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
-            bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
-            topLeft = (int(topLeft[0]), int(topLeft[1]))
+            # print(tvec)
+            # print("\n")
 
-            cv2.line(color_image, topLeft, topRight, (0, 255, 0), 2)
-            cv2.line(color_image, topRight, bottomRight, (0, 255, 0), 2)
-            cv2.line(color_image, bottomRight, bottomLeft, (0, 255, 0), 2)
-            cv2.line(color_image, bottomLeft, topLeft, (0, 255, 0), 2)
+            aruco.drawAxis(color_image, camera_matrix, camera_distortion, rvec, tvec, 10)
+            # corners = np.array(corners)
+            # corners = corners.reshape((4, 2))
+            # (topLeft, topRight, bottomRight, bottomLeft) = corners
+            # topRight = (int(topRight[0]), int(topRight[1]))
+            # bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
+            # bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
+            # topLeft = (int(topLeft[0]), int(topLeft[1]))
+
+            # cv2.line(color_image, topLeft, topRight, (0, 255, 0), 2)
+            # cv2.line(color_image, topRight, bottomRight, (0, 255, 0), 2)
+            # cv2.line(color_image, bottomRight, bottomLeft, (0, 255, 0), 2)
+            # cv2.line(color_image, bottomLeft, topLeft, (0, 255, 0), 2)
             # cX = int((topLeft[0] + bottomRight[0]) / 2.0)
             # cY = int((topLeft[1] + bottomRight[1]) / 2.0)
             # cv2.circle(color_image, (cX, cY), 4, (0, 0, 255), -1)
@@ -83,7 +95,7 @@ def convert_color_image(ros_image):
             R_ct = np.matrix(cv2.Rodrigues(rvec)[0])
             R_tc = R_ct.T
 
-            pos_camera = -R_ct * np.matrix(tvec).T
+            pos_camera = -R_tc * np.matrix(tvec).T
 
             roll_camera, pitch_camera, yaw_camera = rotationMatrixToEulerAngles(R_flip * R_tc)
             roll_camera = math.degrees(roll_camera)
@@ -94,6 +106,13 @@ def convert_color_image(ros_image):
             str_attitude = "CAMERA Attitude r=%4.0f p=%4.0f y=%4.0f"%(roll_camera, pitch_camera, yaw_camera)
             cv2.putText(color_image, str_position, (0, 200), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
             cv2.putText(color_image, str_attitude, (0, 250), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
+
+            pub_x.publish(pos_camera[0])
+            pub_y.publish(pos_camera[1])
+            pub_z.publish(pos_camera[2])
+            pub_roll.publish(roll_camera)
+            pub_pitch.publish(pitch_camera)
+            pub_yaw.publish(yaw_camera)
 
         cv2.namedWindow("Color")
         cv2.imshow("Color", color_image)
