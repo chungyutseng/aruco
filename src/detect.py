@@ -131,6 +131,7 @@ def convert_color_image(ros_image):
 def detect():
     rospy.init_node("detect", anonymous=True)
     rospy.Subscriber("/usb_cam/image_raw", Image, callback=convert_color_image, queue_size=10)
+    # rospy.Subscriber("/tello/image_raw/h264", Image, callback=convert_color_image, queue_size=10)
     rospy.spin()
 
 if __name__ == '__main__':
