@@ -11,6 +11,8 @@ from std_msgs.msg import Float32
 # for taking pictures
 # imag_counter = 0
 
+print(cv2.__version__)
+
 marker_size = 10
 calib_path = ""
 camera_matrix = np.loadtxt(calib_path + 'cameraMatrix.txt', delimiter = ',')
