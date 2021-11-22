@@ -47,9 +47,9 @@ def rotationMatrixToEulerAngles(R):
 
     if not singular:
         print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        x = math.atan2(R[2, 1] / sy, R[2, 2] / sy)    # psi: X
-        y = math.atan2(-R[2, 0], sy)        # phi: Z
-        z = math.atan2(R[1, 0] / sy, R[0, 0] / sy)    # theta: Y 
+        x = math.atan2(R[2, 1], R[2, 2])    # psi: X
+        y = math.atan2(-R[2, 0], sy)        # theta: Y
+        z = math.atan2(R[1, 0], R[0, 0])    # theta: Z 
     else:
         print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
         x = math.atan2(-R[1, 2], R[1, 1])
@@ -96,10 +96,11 @@ def convert_color_image(ros_image):
             pos_camera = -R_tc * np.matrix(tvec)
 
             # roll_camera, pitch_camera, yaw_camera = rotationMatrixToEulerAngles(R_tc)
-            # roll_camera, pitch_camera, yaw_camera = rotationMatrixToEulerAngles(R_flip * R_tc)
-
             roll_camera, pitch_camera, yaw_camera = rotationMatrixToEulerAngles(R_flip * R_tc)
+
+            # roll_camera, pitch_camera, yaw_camera = rotationMatrixToEulerAngles(R_flip * R_tc)
             
+            # roll_camera = math.degrees(roll_camera) + 90
             roll_camera = math.degrees(roll_camera)
             pitch_camera = math.degrees(pitch_camera)
             yaw_camera = math.degrees(yaw_camera)

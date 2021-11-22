@@ -99,7 +99,7 @@ def convert_color_image(ros_image):
 
             pos_camera = -R_tc * np.matrix(tvec).T
 
-            roll_camera, pitch_camera, yaw_camera = rotationMatrixToEulerAngles(R_flip * R_tc)
+            roll_camera, pitch_camera, yaw_camera = rotationMatrixToEulerAngles(R_tc)
             roll_camera = math.degrees(roll_camera)
             pitch_camera = math.degrees(pitch_camera)
             yaw_camera = math.degrees(yaw_camera)
